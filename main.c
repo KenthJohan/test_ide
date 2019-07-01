@@ -59,9 +59,23 @@ static int k_any(Ihandle *ih, int c)
 
 static int marginclick_cb(Ihandle *self, int margin, int line, char* status)
 {
-	printf("MARGINCLICK_CB(Margin: %d, Line: %d, Status:%s)\n", margin, line, status);
-	printf("Fold Level = %s\n", IupGetAttributeId(self, "FOLDLEVEL", line));
-	IupSetfAttribute(self, "FOLDTOGGLE", "%d", line);
+	//printf("MARGINCLICK_CB(Margin: %d, Line: %d, Status:%s)\n", margin, line, status);
+	//printf("Fold Level = %s\n", IupGetAttributeId(self, "FOLDLEVEL", line));
+	if (margin == 1)
+	{
+		IupSetfAttribute (self, "FOLDTOGGLE", "%d", line);
+	}
+
+	if (margin == 2)
+	{
+		long int value = IupGetIntId(self, "MARKERGET", line);
+		printf ("MARKERGET %x\n", value);
+		if (value==0){IupSetIntId(self, "MARKERADD", line, margin);}
+		else{IupSetIntId(self, "MARKERDELETE", line, margin);}
+
+	}
+
+
 	return IUP_DEFAULT;
 }
 
@@ -156,6 +170,21 @@ static void set_attribs (Ihandle *sci)
 		IupSetAttribute(sci, "MARKERDEFINE", "FOLDERTAIL=EMPTY");
 		IupSetAttribute(sci, "FOLDFLAGS", "LINEAFTER_CONTRACTED");
 		IupSetAttribute(sci, "MARGINSENSITIVE1", "YES");
+
+
+	}
+
+	if (1)
+	{
+		//https://www.scintilla.org/ScintillaDox.html
+		//https://qscintilla.com/symbol-margin/
+		IupSetIntId(sci, "MARGINMASK", 2, 0x000005);
+		IupSetAttributeId(sci, "MARKERFGCOLOR", 2, "255 0 0");
+		IupSetAttributeId(sci, "MARKERBGCOLOR", 2, "255 0 0");
+		IupSetAttributeId(sci, "MARKERALPHA", 2, "80");
+		IupSetAttributeId(sci, "MARKERSYMBOL", 2, "CIRCLE");
+		IupSetAttributeId (sci, "MARGINWIDTH", 2, "20");
+		IupSetAttributeId (sci, "MARGINSENSITIVE", 2, "YES");
 	}
 
 	//IupSetAttribute(sci, "SELECTION", "0,2:1,10");
@@ -221,7 +250,7 @@ static int btn_next_action (Ihandle* ih)
 	IupSetStrf(handle_sci, "INDICATORFILLRANGE", "%d:%d", pos1, len);
 	//IupScintillaSendMessage(handle_sci, SCI_GETCOLUMN, pMsg->position, 0);
 	IupShow (IupElementPropertiesDialog (handle_sci));
-
+	//IupScintillaSendMessage(handle_sci, SCI_SETMARGINS, 4, 0);
 }
 
 void test ()
