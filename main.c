@@ -12,6 +12,7 @@
 
 
 #include <iup.h>
+#include "Scintilla.h"
 #include <iup_scintilla.h>
 #include <iup_config.h>
 
@@ -39,6 +40,10 @@ static const char* sampleCode =
 "  IupClose();\n"
 "  return EXIT_SUCCESS;\n}\n"
 };
+
+
+static Ihandle * handle_sci = NULL;
+
 
 static int k_any(Ihandle *ih, int c)
 {
@@ -103,16 +108,6 @@ static int action_cb(Ihandle *self, int insert, int pos, int length, char* text)
 	return IUP_IGNORE;
 }
 
-static int btn_open_action (Ihandle* ih)
-{
-	printf ("btn_open_action!\n");
-}
-
-static int btn_next_action (Ihandle* ih)
-{
-	printf ("btn_next_action!\n");
-}
-
 static void set_attribs (Ihandle *sci)
 {
 	IupSetAttribute(sci, "CLEARALL", "");
@@ -174,45 +169,82 @@ static void set_attribs (Ihandle *sci)
 
 void ScintillaTest(void)
 {
-	Ihandle *dlg, *sci;
+	Ihandle *dlg;
 	IupScintillaOpen();
 	IupSetGlobal("UTF8MODE", "No");
 	// Creates an instance of the Scintilla control
-	sci = IupScintilla();
+	handle_sci = IupScintilla();
 	//  IupSetAttribute(sci, "VISIBLECOLUMNS", "80");
 	//  IupSetAttribute(sci, "VISIBLELINES", "40");
 	//IupSetAttribute(sci, "SCROLLBAR", "NO");
 	//  IupSetAttribute(sci, "BORDER", "NO");
-	IupSetAttribute(sci, "EXPAND", "Yes");
+	IupSetAttribute(handle_sci, "EXPAND", "Yes");
 	//  IupSetAttribute(sci, "OVERWRITE", "ON");
-	IupSetCallback(sci, "MARGINCLICK_CB", (Icallback)marginclick_cb);
-	IupSetCallback(sci, "HOTSPOTCLICK_CB", (Icallback)hotspotclick_cb);
-	IupSetCallback(sci, "BUTTON_CB", (Icallback)button_cb);
-	IupSetCallback(sci, "MOTION_CB", (Icallback)motion_cb);
-	IupSetCallback(sci, "K_ANY", (Icallback)k_any);
-	IupSetCallback(sci, "CARET_CB", (Icallback)caret_cb);
-	IupSetCallback(sci, "VALUECHANGED_CB", (Icallback)valuechanged_cb);
-	IupSetCallback(sci, "ACTION", (Icallback)action_cb);
+	IupSetCallback(handle_sci, "MARGINCLICK_CB", (Icallback)marginclick_cb);
+	IupSetCallback(handle_sci, "HOTSPOTCLICK_CB", (Icallback)hotspotclick_cb);
+	IupSetCallback(handle_sci, "BUTTON_CB", (Icallback)button_cb);
+	IupSetCallback(handle_sci, "MOTION_CB", (Icallback)motion_cb);
+	IupSetCallback(handle_sci, "K_ANY", (Icallback)k_any);
+	IupSetCallback(handle_sci, "CARET_CB", (Icallback)caret_cb);
+	IupSetCallback(handle_sci, "VALUECHANGED_CB", (Icallback)valuechanged_cb);
+	IupSetCallback(handle_sci, "ACTION", (Icallback)action_cb);
 	// Creates a dialog containing the control
-	Ihandle * btn_open = IupButton ("open", NULL);
-	Ihandle * btn_next = IupButton ("next", NULL);
-	IupSetCallback(btn_open, "ACTION", (Icallback)btn_open_action);
-	IupSetCallback(btn_next, "ACTION", (Icallback)btn_next_action);
-	dlg = IupDialog(IupVbox(sci, btn_open, btn_next, NULL));
+
+	dlg = IupDialog(IupVbox(handle_sci, NULL));
 	IupSetAttribute(dlg, "TITLE", "IupScintilla");
 	IupSetAttribute(dlg, "RASTERSIZE", "700x500");
 	IupSetAttribute(dlg, "MARGIN", "10x10");
 	// Shows dialog
 	IupShow(dlg);
 	IupSetAttribute(dlg, "RASTERSIZE", NULL);
-	set_attribs(sci);
+	set_attribs(handle_sci);
+}
+
+static int btn_open_action (Ihandle* ih)
+{
+	printf ("btn_open_action!\n");
+	ScintillaTest();
+}
+
+static int btn_next_action (Ihandle* ih)
+{
+	printf ("btn_next_action!\n");
+	int lin = 9;
+	int pos1;
+	int pos2;
+	IupTextConvertLinColToPos(handle_sci, lin, 0, &pos1);
+	char * text = IupGetAttributeId(handle_sci, "LINE", lin);
+	int len = (int)strlen(text);
+	printf ("len %i\n", len);
+	IupSetAttribute(handle_sci, "INDICATORSTYLE0", "FULLBOX");
+	//IupScintillaSendMessage (handle_sci, SCI_SETINDICATORCURRENT, 4, 0);
+	IupSetStrf(handle_sci, "INDICATORFILLRANGE", "%d:%d", pos1, len);
+	//IupScintillaSendMessage(handle_sci, SCI_GETCOLUMN, pMsg->position, 0);
+	IupShow (IupElementPropertiesDialog (handle_sci));
+
+}
+
+void test ()
+{
+	Ihandle * btn_open = IupButton ("open", NULL);
+	Ihandle * btn_next = IupButton ("next", NULL);
+	IupSetCallback(btn_open, "ACTION", (Icallback)btn_open_action);
+	IupSetCallback(btn_next, "ACTION", (Icallback)btn_next_action);
+	Ihandle * dlg = IupDialog(IupVbox(btn_open, btn_next, NULL));
+	IupSetAttribute(dlg, "TITLE", "IupScintilla");
+	IupSetAttribute(dlg, "RASTERSIZE", "700x500");
+	IupSetAttribute(dlg, "MARGIN", "10x10");
+	// Shows dialog
+	IupShow(dlg);
+	IupSetAttribute(dlg, "RASTERSIZE", NULL);
+
 }
 
 int main(int argc, char* argv[])
 {
 	setbuf (stdout, NULL);
 	IupOpen(&argc, &argv);
-	ScintillaTest();
+	test ();
 	IupMainLoop();
 	IupClose();
 	return EXIT_SUCCESS;
