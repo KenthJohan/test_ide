@@ -5,10 +5,19 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
+
+#include <unistd.h>
+#include <sys/types.h>
+
 
 #include <iup.h>
 #include <iup_scintilla.h>
 #include <iup_config.h>
+
+
+#include "csc_debug.h"
+
 
 static const char* sampleCode =
 {
@@ -94,6 +103,16 @@ static int action_cb(Ihandle *self, int insert, int pos, int length, char* text)
 	return IUP_IGNORE;
 }
 
+static int btn_open_action (Ihandle* ih)
+{
+	printf ("btn_open_action!\n");
+}
+
+static int btn_next_action (Ihandle* ih)
+{
+	printf ("btn_next_action!\n");
+}
+
 static void set_attribs (Ihandle *sci)
 {
 	IupSetAttribute(sci, "CLEARALL", "");
@@ -175,7 +194,11 @@ void ScintillaTest(void)
 	IupSetCallback(sci, "VALUECHANGED_CB", (Icallback)valuechanged_cb);
 	IupSetCallback(sci, "ACTION", (Icallback)action_cb);
 	// Creates a dialog containing the control
-	dlg = IupDialog(IupVbox(sci, NULL));
+	Ihandle * btn_open = IupButton ("open", NULL);
+	Ihandle * btn_next = IupButton ("next", NULL);
+	IupSetCallback(btn_open, "ACTION", (Icallback)btn_open_action);
+	IupSetCallback(btn_next, "ACTION", (Icallback)btn_next_action);
+	dlg = IupDialog(IupVbox(sci, btn_open, btn_next, NULL));
 	IupSetAttribute(dlg, "TITLE", "IupScintilla");
 	IupSetAttribute(dlg, "RASTERSIZE", "700x500");
 	IupSetAttribute(dlg, "MARGIN", "10x10");
