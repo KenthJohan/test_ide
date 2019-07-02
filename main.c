@@ -45,7 +45,7 @@ static const char* sampleCode =
 static Ihandle * handle_sci = NULL;
 
 
-static int k_any(Ihandle *ih, int c)
+static int k_any (Ihandle *ih, int c)
 {
 	//  printf("K_ANY(key: %d)\n", c);
 	if (c == K_cS) {return IUP_IGNORE;}
@@ -57,29 +57,32 @@ static int k_any(Ihandle *ih, int c)
 	return IUP_CONTINUE;
 }
 
-static int marginclick_cb(Ihandle *self, int margin, int line, char* status)
+static int marginclick_cb (Ihandle *self, int margin, int line, char* status)
 {
-	//printf("MARGINCLICK_CB(Margin: %d, Line: %d, Status:%s)\n", margin, line, status);
+	printf("MARGINCLICK_CB(Margin: %d, Line: %d, Status:%s)\n", margin, line, status);
 	//printf("Fold Level = %s\n", IupGetAttributeId(self, "FOLDLEVEL", line));
-	if (margin == 1)
+	if (margin == 4)
 	{
 		IupSetfAttribute (self, "FOLDTOGGLE", "%d", line);
 	}
 
-	if (margin == 2)
+	//if (margin == 2)
 	{
-		long int value = IupGetIntId(self, "MARKERGET", line);
+		int value = IupGetIntId (self, "MARKERGET", line);
 		printf ("MARKERGET %x\n", value);
-		if (value==0){IupSetIntId(self, "MARKERADD", line, margin);}
-		else{IupSetIntId(self, "MARKERDELETE", line, margin);}
-
+		IupSetIntId (self, "MARKERADD", line, 4);
+		IupSetIntId (self, "MARKERADD", line, 5);
+		IupSetIntId (self, "MARKERADD", line, 6);
+		IupSetIntId (self, "MARKERADD", line, 7);
+		//if (value==0){IupSetIntId (self, "MARKERADD", line, margin);}
+		//else{IupSetIntId (self, "MARKERDELETE", line, margin);}
 	}
 
 
 	return IUP_DEFAULT;
 }
 
-static int hotspotclick_cb(Ihandle *self, int pos, int line, int col, char* status)
+static int hotspotclick_cb (Ihandle *self, int pos, int line, int col, char* status)
 {
 	char *text = IupGetAttributeId(self, "LINE", line);
 	printf("HOTSPOTCLICK_CB (Pos: %d, Line: %d, Col: %d, Status:%s)\n", pos, line, col, status);
@@ -87,21 +90,23 @@ static int hotspotclick_cb(Ihandle *self, int pos, int line, int col, char* stat
 	return IUP_DEFAULT;
 }
 
-static int button_cb(Ihandle* self, int button, int pressed, int x, int y, char* status)
+static int button_cb (Ihandle* self, int button, int pressed, int x, int y, char* status)
 {
 	printf("BUTTON_CB = button: %d, pressed: %d, x: %d, y: %d, status: %s\n", button, pressed, x, y, status);
 	(void)self;
 	return IUP_DEFAULT;
 }
 
-static int motion_cb(Ihandle *self, int x, int y, char *status)
+/*
+static int motion_cb (Ihandle *self, int x, int y, char *status)
 {
 	//printf("MOTION_CB = x: %d, y: %d, status: %s\n", x, y, status);
 	(void)self;
 	return IUP_DEFAULT;
 }
+*/
 
-static int caret_cb(Ihandle *self, int lin, int col, int pos)
+static int caret_cb (Ihandle *self, int lin, int col, int pos)
 {
 	printf("CARET_CB = lin: %d, col: %d, pos: %d\n", lin, col, pos);
 	(void)self;
@@ -150,17 +155,45 @@ static void set_attribs (Ihandle *sci)
 	//  IupSetAttribute(sci, "PREPEND", "//  UTF8MODE Enabled: (Ã§Ã£ÃµÃ¡Ã³Ã©)");
 	//else
 	//  IupSetAttribute(sci, "PREPEND", "//  UTF8MODE Disabled: (çãõáóé)");
-	IupSetAttribute(sci, "MARGINWIDTH0", "50");
+	IupSetAttribute(sci, "TABSIZE", "4");
+	IupSetAttribute(sci, "WHITESPACEVIEW", "VISIBLEALWAYS");
+	IupSetAttribute(sci, "WHITESPACEFGCOLOR", "200 200 200");
+
+
+	IupSetAttributeId (sci, "MARGINWIDTH", 0, "50");
+	IupSetAttributeId (sci, "MARGINWIDTH", 1, "20");
+	IupSetAttributeId (sci, "MARGINWIDTH", 2, "20");
+	IupSetAttributeId (sci, "MARGINWIDTH", 3, "20");
+	IupSetAttributeId (sci, "MARGINWIDTH", 4, "20");
+	IupSetAttributeId (sci, "MARGINSENSITIVE", 0, "YES");
+	IupSetAttributeId (sci, "MARGINSENSITIVE", 1, "YES");
+	IupSetAttributeId (sci, "MARGINSENSITIVE", 2, "YES");
+	IupSetAttributeId (sci, "MARGINSENSITIVE", 3, "YES");
+	IupSetAttributeId (sci, "MARGINSENSITIVE", 4, "YES");
+
+	//SCI_MARKERDEFINE
+	//IupSetAttributeId (sci, "MARKERSYMBOL", 0, "CIRCLE");
+	IupSetAttributeId (sci, "MARKERSYMBOL", 4, "CIRCLE");
+	IupSetAttributeId (sci, "MARKERSYMBOL", 5, "ROUNDRECT");
+	IupSetAttributeId (sci, "MARKERSYMBOL", 6, "ARROW");
+	IupSetAttributeId (sci, "MARKERSYMBOL", 7, "SHORTARROW");
+
+	IupSetIntId(sci, "MARGINMASK", 1, 1 << 4);
+	IupSetIntId(sci, "MARGINMASK", 2, 1 << 5);
+	IupSetIntId(sci, "MARGINMASK", 3, 1 << 6);
+	IupSetIntId(sci, "MARGINMASK", 4, 1 << 7);
 
 	if (1)
 	{
+
 		IupSetAttribute(sci, "PROPERTY", "fold=1");
 		IupSetAttribute(sci, "PROPERTY", "fold.compact=0");
 		IupSetAttribute(sci, "PROPERTY", "fold.comment=1");
 		IupSetAttribute(sci, "PROPERTY", "fold.preprocessor=1");
-		IupSetAttribute(sci, "MARGINWIDTH1", "20");
-		IupSetAttribute(sci, "MARGINTYPE1",  "SYMBOL");
-		IupSetAttribute(sci, "MARGINMASKFOLDERS1",  "Yes");
+
+		IupSetAttributeId (sci, "MARGINTYPE", 4, "SYMBOL");
+		IupSetAttributeId (sci, "MARGINMASKFOLDERS", 4, "Yes");
+
 		IupSetAttribute(sci, "MARKERDEFINE", "FOLDER=PLUS");
 		IupSetAttribute(sci, "MARKERDEFINE", "FOLDEROPEN=MINUS");
 		IupSetAttribute(sci, "MARKERDEFINE", "FOLDEREND=EMPTY");
@@ -169,12 +202,9 @@ static void set_attribs (Ihandle *sci)
 		IupSetAttribute(sci, "MARKERDEFINE", "FOLDERSUB=EMPTY");
 		IupSetAttribute(sci, "MARKERDEFINE", "FOLDERTAIL=EMPTY");
 		IupSetAttribute(sci, "FOLDFLAGS", "LINEAFTER_CONTRACTED");
-		IupSetAttribute(sci, "MARGINSENSITIVE1", "YES");
-
-
 	}
 
-	if (1)
+	if (0)
 	{
 		//https://www.scintilla.org/ScintillaDox.html
 		//https://qscintilla.com/symbol-margin/
@@ -187,13 +217,16 @@ static void set_attribs (Ihandle *sci)
 		IupSetAttributeId (sci, "MARGINSENSITIVE", 2, "YES");
 	}
 
+
+
+
 	//IupSetAttribute(sci, "SELECTION", "0,2:1,10");
 	//printf("SELECTION=\"%s\"\n", IupGetAttribute(sci, "SELECTION"));
-	printf("strlen=%zu\n", strlen(sampleCode));
-	printf("COUNT=%s\n", IupGetAttribute(sci, "COUNT"));
+	//printf("strlen=%zu\n", strlen(sampleCode));
+	//printf("COUNT=%s\n", IupGetAttribute(sci, "COUNT"));
 	//printf("VALUE=\"%s\"\n", IupGetAttribute(sci, "VALUE"));
-	printf("LINECOUNT=%s\n", IupGetAttribute(sci, "LINECOUNT"));
-	printf("LINEVALUE=\"%s\"\n", IupGetAttribute(sci, "LINEVALUE"));
+	//printf("LINECOUNT=%s\n", IupGetAttribute(sci, "LINECOUNT"));
+	//printf("LINEVALUE=\"%s\"\n", IupGetAttribute(sci, "LINEVALUE"));
 }
 
 void ScintillaTest(void)
@@ -212,7 +245,7 @@ void ScintillaTest(void)
 	IupSetCallback(handle_sci, "MARGINCLICK_CB", (Icallback)marginclick_cb);
 	IupSetCallback(handle_sci, "HOTSPOTCLICK_CB", (Icallback)hotspotclick_cb);
 	IupSetCallback(handle_sci, "BUTTON_CB", (Icallback)button_cb);
-	IupSetCallback(handle_sci, "MOTION_CB", (Icallback)motion_cb);
+	//IupSetCallback(handle_sci, "MOTION_CB", (Icallback)motion_cb);
 	IupSetCallback(handle_sci, "K_ANY", (Icallback)k_any);
 	IupSetCallback(handle_sci, "CARET_CB", (Icallback)caret_cb);
 	IupSetCallback(handle_sci, "VALUECHANGED_CB", (Icallback)valuechanged_cb);
@@ -235,21 +268,40 @@ static int btn_open_action (Ihandle* ih)
 	ScintillaTest();
 }
 
+void IupTextConvertLinColToPosLen(Ihandle* ih, int lin, int col, int *pos, int *len)
+{
+	IupTextConvertLinColToPos (ih, lin, col, pos);
+	char * text = IupGetAttributeId (ih, "LINE", lin);
+	//assert (text);
+	if (text)
+	{
+		*len = (int)strlen (text); //Maybe use strnlen?
+	}
+	else
+	{
+		*len = 0;
+	}
+}
+
 static int btn_next_action (Ihandle* ih)
 {
 	printf ("btn_next_action!\n");
-	int lin = 9;
-	int pos1;
-	int pos2;
-	IupTextConvertLinColToPos(handle_sci, lin, 0, &pos1);
-	char * text = IupGetAttributeId(handle_sci, "LINE", lin);
-	int len = (int)strlen(text);
-	printf ("len %i\n", len);
-	IupSetAttribute(handle_sci, "INDICATORSTYLE0", "FULLBOX");
+	static int lin = 0;
+	int pos;
+	int len;
+	IupTextConvertLinColToPosLen (handle_sci, lin, 0, &pos, &len);
+	IupSetAttribute (handle_sci, "INDICATORSTYLE0", "FULLBOX");
+	//IupSetStrf (handle_sci, "INDICATORCLEARRANGE", "%d:%d", pos, len);
+	printf ("%d:%d\n", pos, len);
+	IupSetStrf (handle_sci, "INDICATORFILLRANGE", "%d:%d", pos, len);
+	lin ++;
+	//IupTextConvertLinColToPosLen (ih, lin, 0, &pos, &len);
+	//IupSetStrf (handle_sci, "INDICATORFILLRANGE", "%d:%d", pos, len);
+
+
 	//IupScintillaSendMessage (handle_sci, SCI_SETINDICATORCURRENT, 4, 0);
-	IupSetStrf(handle_sci, "INDICATORFILLRANGE", "%d:%d", pos1, len);
 	//IupScintillaSendMessage(handle_sci, SCI_GETCOLUMN, pMsg->position, 0);
-	IupShow (IupElementPropertiesDialog (handle_sci));
+	//IupShow (IupElementPropertiesDialog (handle_sci));
 	//IupScintillaSendMessage(handle_sci, SCI_SETMARGINS, 4, 0);
 }
 
