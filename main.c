@@ -159,6 +159,7 @@ static void set_attribs (Ihandle *sci)
 	IupSetAttribute(sci, "WHITESPACEVIEW", "VISIBLEALWAYS");
 	IupSetAttribute(sci, "WHITESPACEFGCOLOR", "200 200 200");
 
+	IupSetAttributeId (sci, "INDICATORSTYLE", 0, "FULLBOX");
 
 	IupSetAttributeId (sci, "MARGINWIDTH", 0, "50");
 	IupSetAttributeId (sci, "MARGINWIDTH", 1, "20");
@@ -276,6 +277,7 @@ void IupTextConvertLinColToPosLen(Ihandle* ih, int lin, int col, int *pos, int *
 	if (text)
 	{
 		*len = (int)strlen (text); //Maybe use strnlen?
+		//printf ("%d:%d\n", *pos, *len);
 	}
 	else
 	{
@@ -285,33 +287,35 @@ void IupTextConvertLinColToPosLen(Ihandle* ih, int lin, int col, int *pos, int *
 
 static int btn_next_action (Ihandle* ih)
 {
-	printf ("btn_next_action!\n");
+	//printf ("btn_next_action!\n");
 	static int lin = 0;
 	int pos;
 	int len;
 	IupTextConvertLinColToPosLen (handle_sci, lin, 0, &pos, &len);
-	IupSetAttribute (handle_sci, "INDICATORSTYLE0", "FULLBOX");
-	//IupSetStrf (handle_sci, "INDICATORCLEARRANGE", "%d:%d", pos, len);
-	printf ("%d:%d\n", pos, len);
-	IupSetStrf (handle_sci, "INDICATORFILLRANGE", "%d:%d", pos, len);
+	IupSetStrf (handle_sci, "INDICATORCLEARRANGE", "%d:%d", pos, len);
 	lin ++;
-	//IupTextConvertLinColToPosLen (ih, lin, 0, &pos, &len);
+	IupTextConvertLinColToPosLen (handle_sci, lin, 0, &pos, &len);
+	IupSetStrf (handle_sci, "INDICATORFILLRANGE", "%d:%d", pos, len);
 	//IupSetStrf (handle_sci, "INDICATORFILLRANGE", "%d:%d", pos, len);
-
-
 	//IupScintillaSendMessage (handle_sci, SCI_SETINDICATORCURRENT, 4, 0);
 	//IupScintillaSendMessage(handle_sci, SCI_GETCOLUMN, pMsg->position, 0);
-	//IupShow (IupElementPropertiesDialog (handle_sci));
 	//IupScintillaSendMessage(handle_sci, SCI_SETMARGINS, 4, 0);
+}
+
+static int btn_prop_action (Ihandle* ih)
+{
+	IupShow (IupElementPropertiesDialog (handle_sci));
 }
 
 void test ()
 {
 	Ihandle * btn_open = IupButton ("open", NULL);
 	Ihandle * btn_next = IupButton ("next", NULL);
+	Ihandle * btn_prop = IupButton ("IupElementPropertiesDialog", NULL);
 	IupSetCallback(btn_open, "ACTION", (Icallback)btn_open_action);
 	IupSetCallback(btn_next, "ACTION", (Icallback)btn_next_action);
-	Ihandle * dlg = IupDialog(IupVbox(btn_open, btn_next, NULL));
+	IupSetCallback(btn_prop, "ACTION", (Icallback)btn_prop_action);
+	Ihandle * dlg = IupDialog(IupVbox(btn_open, btn_next, btn_prop, NULL));
 	IupSetAttribute(dlg, "TITLE", "IupScintilla");
 	IupSetAttribute(dlg, "RASTERSIZE", "700x500");
 	IupSetAttribute(dlg, "MARGIN", "10x10");
