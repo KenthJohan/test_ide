@@ -19,6 +19,15 @@
 
 #include "csc_debug.h"
 
+enum app_scimargin
+{
+	APP_SCIMARGIN_LINES,
+	APP_SCIMARGIN_BM0,
+	APP_SCIMARGIN_BM1,
+	APP_SCIMARGIN_BM2,
+	APP_SCIMARGIN_FOLD,
+	APP_SCIMARGIN_TEXT
+};
 
 static const char* sampleCode =
 {
@@ -59,25 +68,33 @@ static int k_any (Ihandle *ih, int c)
 
 static int marginclick_cb (Ihandle *self, int margin, int line, char* status)
 {
-	printf("MARGINCLICK_CB(Margin: %d, Line: %d, Status:%s)\n", margin, line, status);
+	//printf("MARGINCLICK_CB(Margin: %d, Line: %d, Status:%s)\n", margin, line, status);
 	//printf("Fold Level = %s\n", IupGetAttributeId(self, "FOLDLEVEL", line));
-	if (margin == 4)
+	int mark = IupGetIntId (self, "MARKERGET", line);
+	//printf ("MARKERGET %x\n", mark);
+
+	if (margin == APP_SCIMARGIN_FOLD)
 	{
 		IupSetfAttribute (self, "FOLDTOGGLE", "%d", line);
 	}
 
-	//if (margin == 2)
+	if (margin == APP_SCIMARGIN_BM0)
 	{
-		int value = IupGetIntId (self, "MARKERGET", line);
-		printf ("MARKERGET %x\n", value);
-		IupSetIntId (self, "MARKERADD", line, 4);
-		IupSetIntId (self, "MARKERADD", line, 5);
-		IupSetIntId (self, "MARKERADD", line, 6);
-		IupSetIntId (self, "MARKERADD", line, 7);
-		//if (value==0){IupSetIntId (self, "MARKERADD", line, margin);}
-		//else{IupSetIntId (self, "MARKERDELETE", line, margin);}
+		if (mark & (1 << 4)) {IupSetIntId (self, "MARKERDELETE", line, 4);}
+		else {IupSetIntId (self, "MARKERADD", line, 4);}
 	}
 
+	if (margin == APP_SCIMARGIN_BM1)
+	{
+		if (mark & (1 << 5)) {IupSetIntId (self, "MARKERDELETE", line, 5);}
+		else {IupSetIntId (self, "MARKERADD", line, 5);}
+	}
+
+	if (margin == APP_SCIMARGIN_BM2)
+	{
+		if (mark & (1 << 6)) {IupSetIntId (self, "MARKERDELETE", line, 6);}
+		else {IupSetIntId (self, "MARKERADD", line, 6);}
+	}
 
 	return IUP_DEFAULT;
 }
@@ -134,7 +151,6 @@ static void set_attribs (Ihandle *sci)
 	IupSetAttribute(sci, "KEYWORDS0", "void struct union enum char short int long double float signed unsigned const static extern auto register volatile bool class private protected public friend inline template virtual asm explicit typename mutable"
 	"if else switch case default break goto return for while do continue typedef sizeof NULL new delete throw try catch namespace operator this const_cast static_cast dynamic_cast reinterpret_cast true false using"
 	"typeid and and_eq bitand bitor compl not not_eq or or_eq xor xor_eq");
-	//IupSetAttribute(sci, "STYLEFONT32", "Courier New");
 	IupSetAttribute(sci, "STYLEFONT32", "Consolas");
 	IupSetAttribute(sci, "STYLEFONTSIZE32", "11");
 	IupSetAttribute(sci, "STYLECLEARALL", "Yes");  /* sets all styles to have the same attributes as 32 */
@@ -147,87 +163,56 @@ static void set_attribs (Ihandle *sci)
 	IupSetAttribute(sci, "STYLEFGCOLOR9", "0 0 255");    // 9-Preprocessor block
 	IupSetAttribute(sci, "STYLEFGCOLOR10", "255 0 255"); // 10-Operator
 	IupSetAttribute(sci, "STYLEBOLD10", "YES");
-	// 11-Identifier
 	IupSetAttribute(sci, "STYLEHOTSPOT6", "YES");
 	IupSetAttribute(sci, "INSERT0", sampleCode);
-	//IupSetAttribute(sci, "INSERT-1", "           ");
-	//if (IupGetInt(NULL, "UTF8MODE"))
-	//  IupSetAttribute(sci, "PREPEND", "//  UTF8MODE Enabled: (Ã§Ã£ÃµÃ¡Ã³Ã©)");
-	//else
-	//  IupSetAttribute(sci, "PREPEND", "//  UTF8MODE Disabled: (çãõáóé)");
 	IupSetAttribute(sci, "TABSIZE", "4");
 	IupSetAttribute(sci, "WHITESPACEVIEW", "VISIBLEALWAYS");
 	IupSetAttribute(sci, "WHITESPACEFGCOLOR", "200 200 200");
 
-	IupSetAttributeId (sci, "INDICATORSTYLE", 0, "FULLBOX");
+	IupSetAttributeId (sci, "MARGINWIDTH", APP_SCIMARGIN_LINES, "50");
+	IupSetAttributeId (sci, "MARGINWIDTH", APP_SCIMARGIN_BM0, "20");
+	IupSetAttributeId (sci, "MARGINWIDTH", APP_SCIMARGIN_BM1, "20");
+	IupSetAttributeId (sci, "MARGINWIDTH", APP_SCIMARGIN_BM2, "20");
+	IupSetAttributeId (sci, "MARGINWIDTH", APP_SCIMARGIN_FOLD, "20");
+	IupSetAttributeId (sci, "MARGINSENSITIVE", APP_SCIMARGIN_LINES, "YES");
+	IupSetAttributeId (sci, "MARGINSENSITIVE", APP_SCIMARGIN_BM0, "YES");
+	IupSetAttributeId (sci, "MARGINSENSITIVE", APP_SCIMARGIN_BM1, "YES");
+	IupSetAttributeId (sci, "MARGINSENSITIVE", APP_SCIMARGIN_BM2, "YES");
+	IupSetAttributeId (sci, "MARGINSENSITIVE", APP_SCIMARGIN_FOLD, "YES");
 
-	IupSetAttributeId (sci, "MARGINWIDTH", 0, "50");
-	IupSetAttributeId (sci, "MARGINWIDTH", 1, "20");
-	IupSetAttributeId (sci, "MARGINWIDTH", 2, "20");
-	IupSetAttributeId (sci, "MARGINWIDTH", 3, "20");
-	IupSetAttributeId (sci, "MARGINWIDTH", 4, "20");
-	IupSetAttributeId (sci, "MARGINSENSITIVE", 0, "YES");
-	IupSetAttributeId (sci, "MARGINSENSITIVE", 1, "YES");
-	IupSetAttributeId (sci, "MARGINSENSITIVE", 2, "YES");
-	IupSetAttributeId (sci, "MARGINSENSITIVE", 3, "YES");
-	IupSetAttributeId (sci, "MARGINSENSITIVE", 4, "YES");
-
-	//SCI_MARKERDEFINE
-	//IupSetAttributeId (sci, "MARKERSYMBOL", 0, "CIRCLE");
+	//https://www.scintilla.org/ScintillaDoc.html#SCI_MARKERDEFINE
 	IupSetAttributeId (sci, "MARKERSYMBOL", 4, "CIRCLE");
 	IupSetAttributeId (sci, "MARKERSYMBOL", 5, "ROUNDRECT");
 	IupSetAttributeId (sci, "MARKERSYMBOL", 6, "ARROW");
 	IupSetAttributeId (sci, "MARKERSYMBOL", 7, "SHORTARROW");
+	IupSetAttributeId (sci, "MARKERSYMBOL", 8, "SC_MARK_BACKGROUND");
 
-	IupSetIntId(sci, "MARGINMASK", 1, 1 << 4);
-	IupSetIntId(sci, "MARGINMASK", 2, 1 << 5);
-	IupSetIntId(sci, "MARGINMASK", 3, 1 << 6);
-	IupSetIntId(sci, "MARGINMASK", 4, 1 << 7);
+	IupSetIntId(sci, "MARGINMASK", APP_SCIMARGIN_BM0, 1 << 4);
+	IupSetIntId(sci, "MARGINMASK", APP_SCIMARGIN_BM1, 1 << 5);
+	IupSetIntId(sci, "MARGINMASK", APP_SCIMARGIN_BM2, 1 << 6);
+	IupSetIntId(sci, "MARGINMASK", APP_SCIMARGIN_FOLD, 1 << 7);
+	IupSetIntId(sci, "MARGINMASK", APP_SCIMARGIN_TEXT, 1 << 8);
 
-	if (1)
-	{
+	IupSetAttributeId(sci, "MARKERBGCOLOR", 8, "255 0 0");
+	IupSetAttributeId(sci, "MARKERALPHA", 8, "80");
 
-		IupSetAttribute(sci, "PROPERTY", "fold=1");
-		IupSetAttribute(sci, "PROPERTY", "fold.compact=0");
-		IupSetAttribute(sci, "PROPERTY", "fold.comment=1");
-		IupSetAttribute(sci, "PROPERTY", "fold.preprocessor=1");
+	IupSetAttribute(sci, "PROPERTY", "fold=1");
+	IupSetAttribute(sci, "PROPERTY", "fold.compact=0");
+	IupSetAttribute(sci, "PROPERTY", "fold.comment=1");
+	IupSetAttribute(sci, "PROPERTY", "fold.preprocessor=1");
 
-		IupSetAttributeId (sci, "MARGINTYPE", 4, "SYMBOL");
-		IupSetAttributeId (sci, "MARGINMASKFOLDERS", 4, "Yes");
+	IupSetAttributeId (sci, "MARGINTYPE", APP_SCIMARGIN_FOLD, "SYMBOL");
+	IupSetAttributeId (sci, "MARGINMASKFOLDERS", APP_SCIMARGIN_FOLD, "Yes");
 
-		IupSetAttribute(sci, "MARKERDEFINE", "FOLDER=PLUS");
-		IupSetAttribute(sci, "MARKERDEFINE", "FOLDEROPEN=MINUS");
-		IupSetAttribute(sci, "MARKERDEFINE", "FOLDEREND=EMPTY");
-		IupSetAttribute(sci, "MARKERDEFINE", "FOLDERMIDTAIL=EMPTY");
-		IupSetAttribute(sci, "MARKERDEFINE", "FOLDEROPENMID=EMPTY");
-		IupSetAttribute(sci, "MARKERDEFINE", "FOLDERSUB=EMPTY");
-		IupSetAttribute(sci, "MARKERDEFINE", "FOLDERTAIL=EMPTY");
-		IupSetAttribute(sci, "FOLDFLAGS", "LINEAFTER_CONTRACTED");
-	}
+	IupSetAttribute(sci, "MARKERDEFINE", "FOLDER=PLUS");
+	IupSetAttribute(sci, "MARKERDEFINE", "FOLDEROPEN=MINUS");
+	IupSetAttribute(sci, "MARKERDEFINE", "FOLDEREND=EMPTY");
+	IupSetAttribute(sci, "MARKERDEFINE", "FOLDERMIDTAIL=EMPTY");
+	IupSetAttribute(sci, "MARKERDEFINE", "FOLDEROPENMID=EMPTY");
+	IupSetAttribute(sci, "MARKERDEFINE", "FOLDERSUB=EMPTY");
+	IupSetAttribute(sci, "MARKERDEFINE", "FOLDERTAIL=EMPTY");
+	IupSetAttribute(sci, "FOLDFLAGS", "LINEAFTER_CONTRACTED");
 
-	if (0)
-	{
-		//https://www.scintilla.org/ScintillaDox.html
-		//https://qscintilla.com/symbol-margin/
-		IupSetIntId(sci, "MARGINMASK", 2, 0x000005);
-		IupSetAttributeId(sci, "MARKERFGCOLOR", 2, "255 0 0");
-		IupSetAttributeId(sci, "MARKERBGCOLOR", 2, "255 0 0");
-		IupSetAttributeId(sci, "MARKERALPHA", 2, "80");
-		IupSetAttributeId(sci, "MARKERSYMBOL", 2, "CIRCLE");
-		IupSetAttributeId (sci, "MARGINWIDTH", 2, "20");
-		IupSetAttributeId (sci, "MARGINSENSITIVE", 2, "YES");
-	}
-
-
-
-
-	//IupSetAttribute(sci, "SELECTION", "0,2:1,10");
-	//printf("SELECTION=\"%s\"\n", IupGetAttribute(sci, "SELECTION"));
-	//printf("strlen=%zu\n", strlen(sampleCode));
-	//printf("COUNT=%s\n", IupGetAttribute(sci, "COUNT"));
-	//printf("VALUE=\"%s\"\n", IupGetAttribute(sci, "VALUE"));
-	//printf("LINECOUNT=%s\n", IupGetAttribute(sci, "LINECOUNT"));
-	//printf("LINEVALUE=\"%s\"\n", IupGetAttribute(sci, "LINEVALUE"));
 }
 
 void ScintillaTest(void)
@@ -287,7 +272,8 @@ void IupTextConvertLinColToPosLen(Ihandle* ih, int lin, int col, int *pos, int *
 
 static int btn_next_action (Ihandle* ih)
 {
-	//printf ("btn_next_action!\n");
+	printf ("btn_next_action!\n");
+	/*
 	static int lin = 0;
 	int pos;
 	int len;
@@ -296,10 +282,11 @@ static int btn_next_action (Ihandle* ih)
 	lin ++;
 	IupTextConvertLinColToPosLen (handle_sci, lin, 0, &pos, &len);
 	IupSetStrf (handle_sci, "INDICATORFILLRANGE", "%d:%d", pos, len);
-	//IupSetStrf (handle_sci, "INDICATORFILLRANGE", "%d:%d", pos, len);
-	//IupScintillaSendMessage (handle_sci, SCI_SETINDICATORCURRENT, 4, 0);
-	//IupScintillaSendMessage(handle_sci, SCI_GETCOLUMN, pMsg->position, 0);
-	//IupScintillaSendMessage(handle_sci, SCI_SETMARGINS, 4, 0);
+	*/
+	static int line = 0;
+	IupSetIntId (handle_sci, "MARKERDELETE", line, 8);
+	line ++;
+	IupSetIntId (handle_sci, "MARKERADD", line, 8);
 }
 
 static int btn_prop_action (Ihandle* ih)
