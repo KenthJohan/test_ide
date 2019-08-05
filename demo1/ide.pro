@@ -3,15 +3,18 @@ CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
 
-SOURCES += main.c
+SOURCES += ide.c
 
 HEADERS += $$PWD/../iup-3.27_Win64_mingw6_lib/include/iup.h
 HEADERS += $$PWD/../cd-5.12_Win64_mingw6_lib/include/cd.h
 HEADERS += $$PWD/../csc_debug.h
 HEADERS += $$PWD/../Scintilla.h
+HEADERS += $$PWD/../io
 
+INCLUDEPATH += "C:/msys64/mingw64/include"
 INCLUDEPATH += $$PWD/../iup-3.27_Win64_mingw6_lib/include
 INCLUDEPATH += $$PWD/../cd-5.12_Win64_mingw6_lib/include
+INCLUDEPATH += $$PWD/../io
 INCLUDEPATH += $$PWD/..
 
 LIBS += -L$$PWD/../iup-3.27_Win64_mingw6_lib

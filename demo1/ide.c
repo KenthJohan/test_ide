@@ -1,17 +1,14 @@
-/*
- * IupScintilla sample
- */
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
 
 #include <unistd.h>
 #include <sys/types.h>
 
 #include <time.h>
-#include <ftw.h>
+#include <uv.h>
 
 #include <iup.h>
 //#include "Scintilla.h"
@@ -20,6 +17,9 @@
 
 
 #include <csc_debug.h>
+
+
+#define UV_ASSERTR(x) if((x)<0){fprintf(stderr, "%s:%i %i:%s\n",__FILE__,__LINE__,(x),uv_strerror(x));exit((x));}
 
 enum app_scimargin
 {
@@ -296,11 +296,58 @@ static int btn_prop_action (Ihandle* ih)
 	IupShow (IupElementPropertiesDialog (handle_sci));
 }
 
+
+
+
+int printdir (Ihandle * ih, int id)
+{
+	char buf [100];
+	static uv_fs_t scandir_req;
+	char const * path = IupGetAttributeId (ih, "TITLE", id);
+	int r = uv_fs_scandir (NULL, &scandir_req, path, 0, NULL);
+	UV_ASSERTR (r);
+	uv_dirent_t dent;
+	int i = -1;
+	//i = IupGetInt (ih, "VALUE");
+	//printf ("VALUE%i\n", i);
+	//IupSetInt (ih, "VALUE", i);
+	while (UV_EOF != uv_fs_scandir_next (&scandir_req, &dent))
+	{
+		switch (dent.type)
+		{
+		case UV_DIRENT_UNKNOWN:break;
+		case UV_DIRENT_FILE:
+			//printf ("%s\n", dent.name);
+			snprintf (buf, 100, "%s/%s", path, dent.name);
+			IupSetAttributeId (ih, "ADDLEAF", id, buf);
+			break;
+		case UV_DIRENT_DIR:
+			//printf ("%s\n", dent.name);
+			snprintf (buf, 100, "%s/%s", path, dent.name);
+			printf ("buf %s\n", buf);
+			IupSetAttributeId (ih, "ADDBRANCH", id, buf);
+			id = IupGetInt (ih, "LASTADDNODE");
+			//IupSetInt (ih, "VALUE", i);
+			printdir (ih, id);
+			break;
+		case UV_DIRENT_LINK:break;
+		case UV_DIRENT_FIFO:break;
+		case UV_DIRENT_SOCKET:break;
+		case UV_DIRENT_CHAR:break;
+		case UV_DIRENT_BLOCK:break;
+		}
+	}
+}
+
+
+static Ihandle * tree;
+
 void test ()
 {
 	Ihandle * btn_open = IupButton ("open", NULL);
 	Ihandle * btn_next = IupButton ("next", NULL);
 	Ihandle * btn_prop = IupButton ("IupElementPropertiesDialog", NULL);
+	tree = IupTree ();
 	IupSetCallback(btn_open, "ACTION", (Icallback)btn_open_action);
 	IupSetCallback(btn_next, "ACTION", (Icallback)btn_next_action);
 	IupSetCallback(btn_prop, "ACTION", (Icallback)btn_prop_action);
@@ -310,51 +357,31 @@ void test ()
 	IupSetAttribute(dlg, "MARGIN", "10x10");
 	// Shows dialog
 	IupShow(dlg);
+	IupShow(IupDialog(IupVbox(tree, NULL)));
 	IupSetAttribute(dlg, "RASTERSIZE", NULL);
-
+	IupSetAttributeId(tree, "TITLE", 0, "../cd-5.12_Win64_mingw6_lib");
+	printdir (tree, 0);
+	//printdir (tree, 1);
 }
 
-int print_entry (const char *filepath, const struct stat *info, const int typeflag, struct FTW *pathinfo)
+int fpath_hidden (char const * s)
 {
-	switch (typeflag)
+	while (1)
 	{
-	/* A symbolic link (not supported).  */
-	case FTW_SL:
-		break;
-
-	/* A symbolic link naming non-existing file (not supported).  */
-	case FTW_SLN:
-		break;
-
-	/* A regular file.  */
-	case FTW_F:
-		printf("%s\n", filepath);
-		break;
-
-	/* A directory.  */
-	case FTW_D:
-		break;
-
-	/* An unreadable directory.  */
-	case FTW_DNR:
-		break;
+		s = strstr (s, "/.");
+		if (s == NULL) {break;}
+		else {s += 2;}
+		if (isalpha (*s) || isdigit (*s)) {return 1;}
 	}
 	return 0;
 }
 
-void print_directory_tree(const char * const dirpath)
-{
-	int r;
-	r = nftw (dirpath, print_entry, FOPEN_MAX - 1, FTW_PHYS);
-	ASSERT_F (r == 0, "%i", r);
-}
+
 
 int main(int argc, char* argv[])
 {
 	setbuf (stdout, NULL);
-
-	print_directory_tree(".");
-
+	setbuf (stderr, NULL);
 	IupOpen(&argc, &argv);
 	test ();
 	IupMainLoop();
