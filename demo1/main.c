@@ -10,14 +10,16 @@
 #include <unistd.h>
 #include <sys/types.h>
 
+#include <time.h>
+#include <ftw.h>
 
 #include <iup.h>
-#include "Scintilla.h"
+//#include "Scintilla.h"
 #include <iup_scintilla.h>
 #include <iup_config.h>
 
 
-#include "csc_debug.h"
+#include <csc_debug.h>
 
 enum app_scimargin
 {
@@ -312,9 +314,47 @@ void test ()
 
 }
 
+int print_entry (const char *filepath, const struct stat *info, const int typeflag, struct FTW *pathinfo)
+{
+	switch (typeflag)
+	{
+	/* A symbolic link (not supported).  */
+	case FTW_SL:
+		break;
+
+	/* A symbolic link naming non-existing file (not supported).  */
+	case FTW_SLN:
+		break;
+
+	/* A regular file.  */
+	case FTW_F:
+		printf("%s\n", filepath);
+		break;
+
+	/* A directory.  */
+	case FTW_D:
+		break;
+
+	/* An unreadable directory.  */
+	case FTW_DNR:
+		break;
+	}
+	return 0;
+}
+
+void print_directory_tree(const char * const dirpath)
+{
+	int r;
+	r = nftw (dirpath, print_entry, FOPEN_MAX - 1, FTW_PHYS);
+	ASSERT_F (r == 0, "%i", r);
+}
+
 int main(int argc, char* argv[])
 {
 	setbuf (stdout, NULL);
+
+	print_directory_tree(".");
+
 	IupOpen(&argc, &argv);
 	test ();
 	IupMainLoop();
