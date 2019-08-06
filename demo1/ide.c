@@ -323,49 +323,45 @@ int fpath_hidden2 (char const * s)
 
 
 
-void list1 (Ihandle * ih)
+void list1 (Ihandle * ih, char * dir0)
 {
 	struct _finddata_t fileinfo;
 	int i = IupGetInt (ih, "LASTADDNODE");
-	char const * dir = IupGetAttributeId (ih, "TITLE", i);
 	intptr_t handle;
-	{
-		char star [MAX_PATH];
-		snprintf (star, MAX_PATH, "%s/*", dir);
-		printf ("dir %i %s\n", i, star);
-		handle = _findfirst (star, &fileinfo);
-	}
+	char star [MAX_PATH];
+	snprintf (star, MAX_PATH, "%s/*", dir0);
+	printf ("dir %i %s\n", i, star);
+	handle = _findfirst (star, &fileinfo);
 	if(handle == -1)
 	{
 		//perror ("Error searching for file");
 		//exit (1);
 		return;
 	}
+
 	while (1)
 	{
-		if(strcmp(fileinfo.name, ".") == 0 || strcmp(fileinfo.name, "..") == 0)
-		{}
-		else if (fpath_hidden2 (fileinfo.name))
-		{}
+		if(strcmp(fileinfo.name, ".") == 0 || strcmp(fileinfo.name, "..") == 0){}
+		//else if (fpath_hidden2 (fileinfo.name)){}
 		else if ((fileinfo.attrib & _A_SUBDIR) == 0)
 		{
-			char dir2 [MAX_PATH];
-			snprintf (dir2, MAX_PATH, "%s/%s", dir, fileinfo.name);
-			printf ("F %x %s\n", fileinfo.attrib, dir2);
-			IupSetAttributeId (ih, "ADDLEAF", i, dir2);
+			snprintf (star, MAX_PATH, "%s/%s", dir0, fileinfo.name);
+			printf ("F %x %s\n", fileinfo.attrib, star);
+			IupSetAttributeId (ih, "ADDLEAF", i, star);
+			list1 (ih, star);
 		}
 		else if (fileinfo.attrib & _A_SUBDIR)
 		{
-			{
-				char dir2 [MAX_PATH] = {0};
-				snprintf (dir2, MAX_PATH, "%s/%s", dir, fileinfo.name);
-				printf ("D %x %s\n", fileinfo.attrib, dir2);
-				IupSetAttributeId (ih, "ADDBRANCH", i, dir2);
-			}
-			list1 (ih);
+			snprintf (star, MAX_PATH, "%s/%s", dir0, fileinfo.name);
+			printf ("D %x %s\n", fileinfo.attrib, star);
+			IupSetAttributeId (ih, "ADDBRANCH", i, star);
+			list1 (ih, star);
 		}
 		int r = _findnext (handle, &fileinfo);
-		if (r != 0) {break;}
+		if (r != 0)
+		{
+			break;
+		}
 	}
 	_findclose(handle);
 }
@@ -395,7 +391,7 @@ int main(int argc, char* argv[])
 	IupSetAttribute(dlg, "RASTERSIZE", NULL);
 	IupSetAttributeId (tree, "TITLE", 0, "..");
 	//printdir (tree, 1);
-	list1 (tree);
+	list1 (tree, "..");
 	IupMainLoop();
 	IupClose();
 	return EXIT_SUCCESS;
