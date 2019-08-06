@@ -3,7 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
-
+#include <io.h>
 #include <unistd.h>
 #include <sys/types.h>
 
@@ -17,6 +17,9 @@
 
 
 #include <csc_debug.h>
+
+
+#include <tinydir.h>
 
 
 #define UV_ASSERTR(x) if((x)<0){fprintf(stderr, "%s:%i %i:%s\n",__FILE__,__LINE__,(x),uv_strerror(x));exit((x));}
@@ -298,52 +301,70 @@ static int btn_prop_action (Ihandle* ih)
 
 
 
-
-int printdir (Ihandle * ih, int id)
+int fpath_hidden (char const * s)
 {
-	char buf [100];
-	static uv_fs_t scandir_req;
-	char const * path = IupGetAttributeId (ih, "TITLE", id);
-	int r = uv_fs_scandir (NULL, &scandir_req, path, 0, NULL);
-	UV_ASSERTR (r);
-	uv_dirent_t dent;
-	int i = -1;
-	//i = IupGetInt (ih, "VALUE");
-	//printf ("VALUE%i\n", i);
-	//IupSetInt (ih, "VALUE", i);
-	while (UV_EOF != uv_fs_scandir_next (&scandir_req, &dent))
+	while (1)
 	{
-		switch (dent.type)
-		{
-		case UV_DIRENT_UNKNOWN:break;
-		case UV_DIRENT_FILE:
-			//printf ("%s\n", dent.name);
-			snprintf (buf, 100, "%s/%s", path, dent.name);
-			IupSetAttributeId (ih, "ADDLEAF", id, buf);
-			break;
-		case UV_DIRENT_DIR:
-			//printf ("%s\n", dent.name);
-			snprintf (buf, 100, "%s/%s", path, dent.name);
-			printf ("buf %s\n", buf);
-			IupSetAttributeId (ih, "ADDBRANCH", id, buf);
-			id = IupGetInt (ih, "LASTADDNODE");
-			//IupSetInt (ih, "VALUE", i);
-			printdir (ih, id);
-			break;
-		case UV_DIRENT_LINK:break;
-		case UV_DIRENT_FIFO:break;
-		case UV_DIRENT_SOCKET:break;
-		case UV_DIRENT_CHAR:break;
-		case UV_DIRENT_BLOCK:break;
-		}
+		s = strstr (s, "/.");
+		if (s == NULL) {break;}
+		else {s += 2;}
+		if (isalpha (*s) || isdigit (*s)) {return 1;}
 	}
+	return 0;
+}
+
+
+
+void list1 (Ihandle * ih)
+{
+	struct _finddata_t fileinfo;
+	int i = IupGetInt (ih, "LASTADDNODE");
+	char const * dir = IupGetAttributeId (ih, "TITLE", i);
+	intptr_t handle;
+	{
+		char star [_MAX_PATH];
+		snprintf (star, _MAX_PATH, "%s/*", dir);
+		printf ("dir %s\n", star);
+		handle = _findfirst (star, &fileinfo);
+	}
+	if(handle == -1)
+	{
+		perror ("Error searching for file");
+		exit (1);
+	}
+	while (1)
+	{
+		if(strcmp(fileinfo.name, ".") == 0 || strcmp(fileinfo.name, "..") == 0)
+		{}
+		else if ((fileinfo.attrib & _A_SUBDIR) == 0)
+		{
+			printf ("F %x %s\n", fileinfo.attrib, fileinfo.name);
+			char dir2 [_MAX_PATH];
+			snprintf (dir2, _MAX_PATH, "%s/%s", dir, fileinfo.name);
+			IupSetAttributeId (ih, "ADDLEAF", i, dir2);
+		}
+		else if (fileinfo.attrib & _A_SUBDIR)
+		{
+			printf ("D %x %s\n", fileinfo.attrib, fileinfo.name);
+			char dir2 [_MAX_PATH];
+			snprintf (dir2, _MAX_PATH, "%s/%s", dir, fileinfo.name);
+			IupSetAttributeId (ih, "ADDBRANCH", i, dir2);
+			list1 (ih);
+		}
+		int r = _findnext (handle, &fileinfo);
+		if (r != 0) {break;}
+	}
+	_findclose(handle);
 }
 
 
 static Ihandle * tree;
 
-void test ()
+int main(int argc, char* argv[])
 {
+	setbuf (stdout, NULL);
+	setbuf (stderr, NULL);
+	IupOpen (&argc, &argv);
 	Ihandle * btn_open = IupButton ("open", NULL);
 	Ihandle * btn_next = IupButton ("next", NULL);
 	Ihandle * btn_prop = IupButton ("IupElementPropertiesDialog", NULL);
@@ -359,31 +380,9 @@ void test ()
 	IupShow(dlg);
 	IupShow(IupDialog(IupVbox(tree, NULL)));
 	IupSetAttribute(dlg, "RASTERSIZE", NULL);
-	IupSetAttributeId(tree, "TITLE", 0, "../cd-5.12_Win64_mingw6_lib");
-	printdir (tree, 0);
+	IupSetAttributeId (tree, "TITLE", 0, "../cd-5.12_Win64_mingw6_lib");
 	//printdir (tree, 1);
-}
-
-int fpath_hidden (char const * s)
-{
-	while (1)
-	{
-		s = strstr (s, "/.");
-		if (s == NULL) {break;}
-		else {s += 2;}
-		if (isalpha (*s) || isdigit (*s)) {return 1;}
-	}
-	return 0;
-}
-
-
-
-int main(int argc, char* argv[])
-{
-	setbuf (stdout, NULL);
-	setbuf (stderr, NULL);
-	IupOpen(&argc, &argv);
-	test ();
+	list1 (tree);
 	IupMainLoop();
 	IupClose();
 	return EXIT_SUCCESS;
