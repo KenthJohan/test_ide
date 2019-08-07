@@ -21,6 +21,8 @@
 
 #include <tinydir.h>
 
+#include "ide_images.h"
+
 
 #define UV_ASSERTR(x) if((x)<0){fprintf(stderr, "%s:%i %i:%s\n",__FILE__,__LINE__,(x),uv_strerror(x));exit((x));}
 
@@ -55,97 +57,7 @@ static const char* sampleCode =
 "  return EXIT_SUCCESS;\n}\n"
 };
 
-#define TEST_IMAGE_SIZE 16
-static Ihandle* load_image_TestImage(void)
-{
-	unsigned char image_data_8 [TEST_IMAGE_SIZE*TEST_IMAGE_SIZE] =
-	{
-	5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,1,1,1,1,2,2,2,2,0,0,0,5,
-	5,0,0,0,1,1,1,1,2,2,2,2,0,0,0,5,
-	5,0,0,0,1,1,1,1,2,2,2,2,0,0,0,5,
-	5,0,0,0,1,1,1,1,2,2,2,2,0,0,0,5,
-	5,0,0,0,3,3,3,3,4,4,4,4,0,0,0,5,
-	5,0,0,0,3,3,3,3,4,4,4,4,0,0,0,5,
-	5,0,0,0,3,3,3,3,4,4,4,4,0,0,0,5,
-	5,0,0,0,3,3,3,3,4,4,4,4,0,0,0,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
-	};
-	Ihandle* image = IupImage(TEST_IMAGE_SIZE, TEST_IMAGE_SIZE, image_data_8);
-	IupSetAttribute(image, "0", "BGCOLOR");
-	IupSetAttribute(image, "1", "255 0 0");
-	IupSetAttribute(image, "2", "0 255 0");
-	IupSetAttribute(image, "3", "0 0 255");
-	IupSetAttribute(image, "4", "255 000 255");
-	IupSetAttribute(image, "5", "0 0 0");
-	return image;
-}
-static Ihandle* load_image_TestImage2(void)
-{
-	unsigned char image_data_8 [TEST_IMAGE_SIZE*TEST_IMAGE_SIZE] =
-	{
-	5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,1,1,0,0,0,0,2,2,0,0,0,5,
-	5,0,0,0,1,1,0,0,0,0,2,2,0,0,0,5,
-	5,0,0,0,1,1,0,0,0,0,2,2,0,0,0,5,
-	5,0,0,0,1,1,1,1,2,2,2,2,0,0,0,5,
-	5,0,0,0,3,3,3,3,4,4,4,4,0,0,0,5,
-	5,0,0,0,3,3,0,0,0,0,4,4,0,0,0,5,
-	5,0,0,0,3,3,0,0,0,0,4,4,0,0,0,5,
-	5,0,0,0,3,3,0,0,0,0,4,4,0,0,0,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
-	};
-	Ihandle* image = IupImage(TEST_IMAGE_SIZE, TEST_IMAGE_SIZE, image_data_8);
-	IupSetAttribute(image, "0", "BGCOLOR");
-	IupSetAttribute(image, "1", "255 000 000");
-	IupSetAttribute(image, "2", "255 000 000");
-	IupSetAttribute(image, "3", "255 000 000");
-	IupSetAttribute(image, "4", "255 000 000");
-	IupSetAttribute(image, "5", "0 0 0");
-	return image;
-}
-static Ihandle* load_image_TestImage3(void)
-{
-	unsigned char image_data_8 [TEST_IMAGE_SIZE*TEST_IMAGE_SIZE] =
-	{
-	5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,1,1,1,1,1,1,1,1,0,0,0,5,
-	5,0,0,0,1,1,1,1,1,1,1,1,0,0,0,5,
-	5,0,0,0,1,1,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,1,1,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,1,1,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,1,1,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,1,1,1,1,1,1,1,1,0,0,0,5,
-	5,0,0,0,1,1,1,1,1,1,1,1,0,0,0,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,
-	5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
-	};
-	Ihandle* image = IupImage(TEST_IMAGE_SIZE, TEST_IMAGE_SIZE, image_data_8);
-	IupSetAttribute(image, "0", "BGCOLOR");
-	IupSetAttribute(image, "1", "000 000 255");
-	IupSetAttribute(image, "2", "000 000 255");
-	IupSetAttribute(image, "3", "000 000 255");
-	IupSetAttribute(image, "4", "000 000 255");
-	IupSetAttribute(image, "5", "0 0 0");
-	return image;
-}
+
 
 
 static Ihandle * gih_sci = NULL;
@@ -348,15 +260,23 @@ void list1 (Ihandle * ih, char * dir0)
 			char * ext = strrchr (fileinfo.name, '.');
 			if (ext && (strcmp (ext, ".a") == 0))
 			{
-				IupSetAttributeHandleId (ih, "IMAGE", IupGetInt (ih, "LASTADDNODE"), load_image_TestImage());
+				IupSetAttributeHandleId (ih, "IMAGE", IupGetInt (ih, "LASTADDNODE"), gih_img_lib);
 			}
 			else if (ext && (strcmp (ext, ".h") == 0))
 			{
-				IupSetAttributeHandleId (ih, "IMAGE", IupGetInt (ih, "LASTADDNODE"), load_image_TestImage2());
+				IupSetAttributeHandleId (ih, "IMAGE", IupGetInt (ih, "LASTADDNODE"), gih_img_h);
+			}
+			else if (ext && (strcmp (ext, ".hpp") == 0))
+			{
+				IupSetAttributeHandleId (ih, "IMAGE", IupGetInt (ih, "LASTADDNODE"), gih_img_hpp);
 			}
 			else if (ext && (strcmp (ext, ".c") == 0))
 			{
-				IupSetAttributeHandleId (ih, "IMAGE", IupGetInt (ih, "LASTADDNODE"), load_image_TestImage3());
+				IupSetAttributeHandleId (ih, "IMAGE", IupGetInt (ih, "LASTADDNODE"), gih_img_c);
+			}
+			else if (ext && (strcmp (ext, ".cpp") == 0))
+			{
+				IupSetAttributeHandleId (ih, "IMAGE", IupGetInt (ih, "LASTADDNODE"), gih_img_cpp);
 			}
 		}
 		else if (fileinfo.attrib & _A_SUBDIR)
@@ -425,6 +345,7 @@ int main(int argc, char* argv[])
 	setbuf (stdout, NULL);
 	setbuf (stderr, NULL);
 	IupOpen (&argc, &argv);
+	ide_images_load ();
 
 	{
 		Ihandle * btn_open = IupButton ("open", NULL);

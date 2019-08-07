@@ -3,6 +3,9 @@ CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
 
+
+#QMAKE_CFLAGS += -fprofile-arcs -ftest-coverage
+
 SOURCES += ide.c
 
 HEADERS += $$PWD/../iup-3.27_Win64_mingw6_lib/include/iup.h
@@ -10,6 +13,7 @@ HEADERS += $$PWD/../cd-5.12_Win64_mingw6_lib/include/cd.h
 HEADERS += $$PWD/../csc_debug.h
 HEADERS += $$PWD/../Scintilla.h
 HEADERS += $$PWD/../io
+HEADERS += ide_images.h
 
 INCLUDEPATH += "C:/msys64/mingw64/include"
 INCLUDEPATH += $$PWD/../iup-3.27_Win64_mingw6_lib/include
@@ -24,3 +28,4 @@ LIBS += -liup_scintilla -liup -liupcontrols -liupcd -lcd -limm32 -lcdim -lcdgl -
 
 LIBS += -L"C:\msys64\mingw64\lib"
 LIBS += -luv
+#LIBS += --coverage
